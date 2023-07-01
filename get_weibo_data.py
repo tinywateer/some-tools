@@ -3,6 +3,7 @@
 
 import requests
 import argparse
+import datetime
 
 
 # 你的微博 uid, 手动修改
@@ -13,7 +14,8 @@ cookies = ""
 
 # 获取微博数据, 根据 page 获取
 def get_weibo_data(page):
-    url = "https://weibo.com/ajax/statuses/mymblog?uid={}&page={}&feature=0".format(uid, page)
+    url = "https://weibo.com/ajax/statuses/mymblog?uid={}&page={}&feature=0".format(
+        uid, page)
     headers = {
         "cookie": cookies
     }
@@ -42,6 +44,15 @@ def align_text(text):
     return result
 
 
+def convert_time_string(time_string):
+    # 将时间字符串解析为 datetime 对象
+    time_obj = datetime.datetime.strptime(
+        time_string, "%a %b %d %H:%M:%S %z %Y")
+
+    # 将 datetime 对象的日期部分格式化为指定格式的字符串
+    return time_obj.strftime("%Y.%m.%d")
+
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -64,11 +75,11 @@ def main():
             if str(year) not in j["created_at"]:
                 continue
 
-            output.append("// at " + j["created_at"])
+            output.append("// " + convert_time_string(j["created_at"]))
 
             text = j["text_raw"]
             # 如果文本过长, 获取长微博数据
-            if len(text) >= 100:
+            if j["isLongText"]:
                 try:
                     data = get_long_weibo_data(j["mblogid"])["data"]
                     if "longTextContent" in data:
@@ -79,7 +90,7 @@ def main():
             text = align_text(text)
             output.append(text + "\n")
 
-            # output.append("\n")          
+            # output.append("\n")
 
     # 写入文件
     file_name = "weibo_{}.txt".format(year)

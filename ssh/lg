@@ -50,7 +50,7 @@ def main():
     for i in range(0, len(servers)):
         num = i + 1
         server = servers[i]
-        print(num, "|", "\t", server["ip"], "\t", server["comment"], "\t", server["passwd"])
+        print(num, "|", "\t", server["ip"], "\t", server["comment"])
     print("please input which to login: ")
 
     input = sys.stdin.readline()

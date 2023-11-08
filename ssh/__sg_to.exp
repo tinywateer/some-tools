@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f 
+
+set port [lindex $argv 0 ]   
+set username [lindex $argv 1 ] 
+set ip  [lindex $argv 2 ]
+set mypassword [lindex $argv 3 ] 
+set src_file [lindex $argv 4 ]
+set timeout 10             
+ 
+spawn scp -P $port $src_file $username@$ip:/data
+expect {                   
+"*yes/no?" { send "yes\r"; exp_continue}
+"*assword:" { send "$mypassword\r" } 
+} 
+interact 

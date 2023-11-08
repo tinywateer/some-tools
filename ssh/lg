@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+#! encoding: utf-8
+
+import os
+import sys
+
+
+# file path of servers.
+servers_file_path = os.path.join(os.path.dirname(__file__), "servers.txt")
+
+# login exp file path.
+login_exp_file_path = os.path.join(os.path.dirname(__file__), "__lg.exp")
+
+# servers.
+servers = []
+
+
+# parse server file.
+def parse_servers():
+    with open(servers_file_path, "r") as f:
+        servers_text = f.read()
+        for i in servers_text.splitlines():
+            if i.strip() == "":
+                continue
+
+            x = i.strip().split("|")
+            if len(x) == 0:
+                continue
+
+            ip = x[0].strip()
+            comment = x[1].strip()
+            user = x[2].strip()
+            port = x[3].strip()
+            passwd = x[4].strip()
+            item = {
+                "ip": ip,
+                "comment": comment,
+                "user": user,
+                "passwd": passwd,
+                "port": port
+            }
+            servers.append(item)
+
+# main.
+def main():
+    parse_servers()
+
+    for i in range(0, len(servers)):
+        num = i + 1
+        server = servers[i]
+        print(num, "|", "\t", server["ip"], "\t", server["comment"], "\t", server["passwd"])
+    print("please input which to login: ")
+
+    input = sys.stdin.readline()
+    index = int(input.strip())
+
+    server = servers[index-1]
+    ip = server["ip"]
+    user = server["user"]
+    passwd = server["passwd"]
+    port = server["port"]
+
+    print(login_exp_file_path, ip, user, passwd, port)
+    os.system("{0} {1} {2} {3} {4}".format(login_exp_file_path, ip, user, passwd, port))
+
+
+if __name__ == '__main__':
+    main()

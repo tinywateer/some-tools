@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+#! encoding: utf-8
+
+import os
+import sys
+
+
+
+# file path of servers.
+servers_file_path = os.path.join(os.path.dirname(__file__), "servers.txt")
+
+# scp to remote exp file path.
+scp_to_exp_file_path = os.path.join(os.path.dirname(__file__), "__sg_to.exp")
+
+# scp from remote exp file path.
+scp_from_exp_file_path = os.path.join(os.path.dirname(__file__), "__sg_from.exp")
+
+# servers.
+servers = []
+
+
+# parse server file.
+def parse_servers():
+    with open(servers_file_path, "r") as f:
+        servers_text = f.read()
+        for i in servers_text.splitlines():
+            if i.strip() == "":
+                continue
+
+            x = i.strip().split("|")
+            if len(x) == 0:
+                continue
+
+            ip = x[0].strip()
+            comment = x[1].strip()
+            user = x[2].strip()
+            port = x[3].strip()
+            passwd = x[4].strip()
+            item = {
+                "ip": ip,
+                "comment": comment,
+                "user": user,
+                "passwd": passwd,
+                "port": port
+            }
+            servers.append(item)
+
+
+def main():
+    parse_servers()
+
+    for i in range(0, len(servers)):
+        num = i + 1
+        server = servers[i]
+        print(num, "|", "\t", server["ip"], "\t", server["comment"], "\t", server["passwd"])
+    print("please input which to scp: ")
+
+    input = sys.stdin.readline()
+    index = int(input.strip())
+
+    server = servers[index-1]
+    ip = server["ip"]
+    user = server["user"]
+    passwd = server["passwd"]
+    port = server["port"]
+
+    print("please input which file to scp: ")
+    src_file = sys.stdin.readline().strip()
+
+    print("reverse?[Y/N,y/n]: ")
+    reverse = sys.stdin.readline().strip()
+    reverse = reverse.upper()
+
+    scp_exp_file_path = scp_to_exp_file_path
+    if reverse == "Y":
+        scp_exp_file_path = scp_from_exp_file_path
+
+    print(scp_exp_file_path, port, user, ip, passwd, src_file)
+    os.system("{0} {1} {2} {3} {4} {5}".format(scp_exp_file_path, port, user, ip, passwd, src_file))
+
+
+if __name__ == '__main__':
+    main()

@@ -8,28 +8,26 @@ import datetime
 import requests
 
 
-# 你的微博 uid, 手动修改
-uid = "7680559239"
-# cookie 信息, 手动修改
-cookies = ""
-
-
 # 获取微博数据, 根据 page 获取
-def get_weibo_data(page):
+def get_weibo_data(page, uid, cookie):
+    if uid is None:
+        raise Exception("uid is None")
     url = "https://weibo.com/ajax/statuses/mymblog?uid={}&page={}&feature=0".format(
         uid, page)
     headers = {
-        "cookie": cookies
+        "Content-Type": "application/json;charset=UTF-8",
+        "Cookie": cookie,
     }
     response = requests.get(url, headers=headers)
     return response.json()
 
 
 # 获取长微博数据, 根据 mid 获取
-def get_long_weibo_data(mid):
+def get_long_weibo_data(mid, cookie):
     url = "https://weibo.com/ajax/statuses/longtext?id={}".format(mid)
     headers = {
-        "cookie": cookies
+        "Content-Type": "application/json;charset=UTF-8",
+        "Cookie": cookie,
     }
     response = requests.get(url, headers=headers)
     return response.json()
@@ -58,21 +56,30 @@ def convert_time_string(time_string):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-y", "--year", type=str, default=2021, help="过滤年份")
+    # year
+    parser.add_argument("-y", "--year", type=str, default=2021, help="年份")
+    # uid: default is mine
+    parser.add_argument("-u", "--uid", type=str,
+                        default=7680559239, help="微博 uid")
+    # cookie: default is empty
+    parser.add_argument("-c", "--cookie", type=str,
+                        default="", help="微博 cookie")
     args = parser.parse_args()
     year = args.year
+    uid = args.uid
+    cookie = args.cookie
 
     # 输出列表
     output = []
 
     # 获取总页数
-    data = get_weibo_data(1)
+    data = get_weibo_data(1, uid, cookie)
     total = data.get("data")["total"]
     page = total // 20 + 1
 
     # 获取所有微博数据
     for i in range(1, page + 1):
-        data = get_weibo_data(i)
+        data = get_weibo_data(i, uid, cookie)
         for j in data.get("data")["list"]:
             # 过滤年份
             if j["created_at"].find(str(year)) == -1:
@@ -86,7 +93,7 @@ def main():
             text = j["text_raw"]
             # 如果文本过长, 获取长微博数据
             if j["isLongText"]:
-                long_data = get_long_weibo_data(j["mblogid"])
+                long_data = get_long_weibo_data(j["mblogid"], cookie)
                 text = long_data.get("data").get("longTextContent")
 
             # 格式化文本

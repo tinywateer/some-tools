@@ -57,7 +57,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     # year
-    parser.add_argument("-y", "--year", type=str, default=2021, help="年份")
+    parser.add_argument("-y", "--year", type=str, default=2024, help="年份")
     # uid: default is mine
     parser.add_argument("-u", "--uid", type=str,
                         default=7680559239, help="微博 uid")
@@ -83,7 +83,8 @@ def main():
         for j in data.get("data")["list"]:
             # 过滤年份
             if j["created_at"].find(str(year)) == -1:
-                continue
+                # 如果年份不匹配, 跳出循环, 不再获取数据
+                break
 
             # 获取微博创建时间
             created_at = convert_time_string(j["created_at"])
@@ -92,7 +93,9 @@ def main():
             # 获取微博文本
             text = j["text_raw"]
             # 如果文本过长, 获取长微博数据
-            if j["isLongText"]:
+            if "isLongText" not in j:
+                print("isLongText not found: ", text)
+            if "isLongText" in j and j["isLongText"]:
                 long_data = get_long_weibo_data(j["mblogid"], cookie)
                 text = long_data.get("data").get("longTextContent")
 
